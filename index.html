@@ -110,23 +110,25 @@ document.body.addEventListener("click", ()=>{
  document.getElementById("music").play();
 }, {once:true});
 
-// loja
+// loja (CORRIGIDA)
 function toggleShop(){
  let el = document.getElementById("shop");
- el.style.display = el.style.display==="none"?"block":"none";
+ el.style.display = (el.style.display === "block") ? "none" : "block";
+}
+
+// skins (CORRIGIDA)
+function toggleSkins(){
+ let el = document.getElementById("skins");
+ el.style.display = (el.style.display === "block") ? "none" : "block";
 }
 
 function upgradeJump(){
  if(coins>=50){
    coins-=50;
    jumpForce-=2;
- } else alert("Sem moedas!");
-}
-
-// skins
-function toggleSkins(){
- let el = document.getElementById("skins");
- el.style.display = el.style.display==="none"?"block":"block";
+ } else {
+   alert("Sem moedas!");
+ }
 }
 
 function setSkin(color){
@@ -137,7 +139,7 @@ function setSkin(color){
 window.addEventListener("touchstart", ()=> velocity = jumpForce);
 window.addEventListener("mousedown", ()=> velocity = jumpForce);
 
-// stickman com skin
+// stickman
 function drawStickman(x,y){
 
  if(skin==="dragon"){
@@ -145,7 +147,6 @@ function drawStickman(x,y){
    ctx.shadowColor = "orange";
    ctx.strokeStyle="orange";
 
-   // cabelo anime
    ctx.fillStyle="yellow";
    ctx.beginPath();
    ctx.moveTo(x-15,y-45);
@@ -216,7 +217,7 @@ function draw(){
  ctx.fillStyle=g;
  ctx.fillRect(0,cameraY,canvas.width,canvas.height);
 
- // trampolim muda com skin
+ // trampolim
  if(skin==="dragon"){
    ctx.fillStyle="orange";
    ctx.shadowBlur=15;
