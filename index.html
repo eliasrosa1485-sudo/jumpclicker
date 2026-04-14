@@ -10,7 +10,6 @@ body {
     margin: 0;
     overflow: hidden;
     font-family: Arial;
-    background: linear-gradient(#87CEEB, #000);
 }
 
 #ui {
@@ -21,37 +20,6 @@ body {
     justify-content: space-between;
     padding: 0 20px;
     color: white;
-    font-size: 20px;
-}
-
-#powerBar {
-    position: absolute;
-    bottom: 60px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 300px;
-    height: 20px;
-    background: #333;
-    border-radius: 10px;
-    overflow: hidden;
-}
-
-#powerFill {
-    height: 100%;
-    width: 0%;
-    background: lime;
-}
-
-#btn {
-    position: absolute;
-    bottom: 10px;
-    left: 50%;
-    transform: translateX(-50%);
-    padding: 15px 40px;
-    background: orange;
-    border-radius: 10px;
-    color: white;
-    font-weight: bold;
 }
 </style>
 </head>
@@ -62,9 +30,6 @@ body {
     <div id="coins">💰 0</div>
     <div id="meters">0 m</div>
 </div>
-
-<div id="powerBar"><div id="powerFill"></div></div>
-<div id="btn">SEGURE</div>
 
 <canvas id="game"></canvas>
 
@@ -78,71 +43,30 @@ canvas.height = window.innerHeight;
 let y = canvas.height - 150;
 let velocity = 0;
 let gravity = 0.6;
-let bounce = 0.85;
 
-let power = 0;
-let charging = false;
-
+let cameraY = 0;
 let meters = 0;
 let coins = 0;
 
-let particles = [];
-let gameOver = false;
-let win = false;
-
-// sons
-const jumpSound = new Audio("https://actions.google.com/sounds/v1/cartoon/boing.ogg");
-const winSound = new Audio("https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg");
-
-// controles
-function startCharge() { charging = true; }
-function releaseJump() {
-    velocity = -power * 0.6;
-    jumpSound.play();
-    charging = false;
-    power = 0;
-}
-
-window.addEventListener("mousedown", startCharge);
-window.addEventListener("mouseup", releaseJump);
-window.addEventListener("touchstart", startCharge);
-window.addEventListener("touchend", releaseJump);
-
-// partículas
-function createParticles(x, y) {
-    for (let i = 0; i < 10; i++) {
-        particles.push({
-            x, y,
-            vx: Math.random()*4-2,
-            vy: Math.random()*4-2,
-            life: 30
-        });
-    }
-}
-
-// DESENHAR STICKMAN
+// stickman
 function drawStickman(x, y) {
-    ctx.strokeStyle = "black";
     ctx.lineWidth = 4;
+    ctx.strokeStyle = "black";
 
-    // cabeça
     ctx.beginPath();
-    ctx.arc(x, y - 30, 15, 0, Math.PI * 2);
+    ctx.arc(x, y - 30, 15, 0, Math.PI*2);
     ctx.stroke();
 
-    // corpo
     ctx.beginPath();
     ctx.moveTo(x, y - 15);
     ctx.lineTo(x, y + 20);
     ctx.stroke();
 
-    // braços
     ctx.beginPath();
     ctx.moveTo(x - 20, y);
     ctx.lineTo(x + 20, y);
     ctx.stroke();
 
-    // pernas
     ctx.beginPath();
     ctx.moveTo(x, y + 20);
     ctx.lineTo(x - 15, y + 40);
@@ -151,10 +75,17 @@ function drawStickman(x, y) {
     ctx.stroke();
 }
 
+// controle
+window.addEventListener("mousedown", ()=>{
+    velocity = -15;
+});
+
+window.addEventListener("touchstart", ()=>{
+    velocity = -15;
+});
+
 // loop
 function update() {
-
-    if (charging && power < 100) power += 2;
 
     velocity += gravity;
     y += velocity;
@@ -162,73 +93,51 @@ function update() {
     // trampolim
     if (y > canvas.height - 150) {
         y = canvas.height - 150;
-        velocity *= -bounce;
-        createParticles(canvas.width/2, y);
+        velocity = -15;
     }
 
     meters += Math.abs(velocity * 5);
 
-    if (Math.random() < 0.03) coins++;
-
-    if (meters >= 100000000) {
-        win = true;
-        gameOver = true;
-        winSound.play();
-    }
-
     draw();
-
-    if (!gameOver) requestAnimationFrame(update);
-    else drawEnd();
+    requestAnimationFrame(update);
 }
 
 function draw() {
     ctx.clearRect(0,0,canvas.width,canvas.height);
 
-    // espaço
-    if (meters > 20000) {
-        ctx.fillStyle = "black";
-        ctx.fillRect(0,0,canvas.width,canvas.height);
-    }
+    // câmera suave
+    cameraY += (y - canvas.height/2 - cameraY) * 0.08;
+    ctx.setTransform(1,0,0,1,0,-cameraY);
 
-    // sol final
-    if (meters > 99900000) {
+    // fundo gradiente
+    let gradient = ctx.createLinearGradient(0, cameraY, 0, cameraY + canvas.height);
+    gradient.addColorStop(0, "#000");
+    gradient.addColorStop(1, "#87CEEB");
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, cameraY, canvas.width, canvas.height);
+
+    // sol
+    if (meters > 50000) {
         ctx.fillStyle = "orange";
         ctx.beginPath();
-        ctx.arc(canvas.width/2, 100, 100, 0, Math.PI*2);
+        ctx.arc(canvas.width/2, cameraY + 100, 100, 0, Math.PI*2);
         ctx.fill();
     }
 
     // trampolim
     ctx.fillStyle = "blue";
-    ctx.fillRect(canvas.width/2 - 100, canvas.height - 100, 200, 20);
+    ctx.fillRect(canvas.width/2 - 100, canvas.height - 100 + cameraY, 200, 20);
 
-    // stickman
     drawStickman(canvas.width/2, y);
 
-    // partículas
-    particles.forEach((p,i)=>{
-        ctx.fillStyle = "yellow";
-        ctx.fillRect(p.x, p.y, 3, 3);
-        p.x += p.vx;
-        p.y += p.vy;
-        p.life--;
-        if (p.life <= 0) particles.splice(i,1);
-    });
+    ctx.setTransform(1,0,0,1,0,0);
 
-    document.getElementById("powerFill").style.width = power + "%";
     document.getElementById("meters").innerText = Math.floor(meters) + " m";
     document.getElementById("coins").innerText = "💰 " + coins;
 }
 
-function drawEnd() {
-    ctx.fillStyle = "white";
-    ctx.font = "40px Arial";
-    ctx.textAlign = "center";
-
-    ctx.fillText("VITÓRIA!", canvas.width/2, canvas.height/2 - 40);
-    ctx.fillText("Você entrou no SOL ☀️", canvas.width/2, canvas.height/2);
-}
-
 update();
 </script>
+
+</body>
+</html>
