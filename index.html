@@ -66,7 +66,7 @@ button {
 
 <div id="shop">
  <h2>LOJA</h2>
- <button onclick="upgradeJump()">💪 Pulo + (50)</button><br>
+ <button onclick="upgradeJump()" id="upgradeBtn">💪 Pulo + (50)</button><br>
  <button onclick="toggleShop()">Fechar</button>
 </div>
 
@@ -104,28 +104,40 @@ let meters = 0;
 let coins = 0;
 
 let skin = "white";
+let upgradePrice = 50;
 
 // música
 document.body.addEventListener("click", ()=>{
  document.getElementById("music").play();
 }, {once:true});
 
-// loja (CORRIGIDA)
+// LOJA (CORRIGIDA)
 function toggleShop(){
  let el = document.getElementById("shop");
- el.style.display = (el.style.display === "block") ? "none" : "block";
+ if(el.style.display === "block"){
+   el.style.display = "none";
+ } else {
+   el.style.display = "block";
+ }
 }
 
-// skins (CORRIGIDA)
+// SKINS (CORRIGIDA)
 function toggleSkins(){
  let el = document.getElementById("skins");
- el.style.display = (el.style.display === "block") ? "none" : "block";
+ if(el.style.display === "block"){
+   el.style.display = "none";
+ } else {
+   el.style.display = "block";
+ }
 }
 
+// UPGRADE COM PREÇO AUMENTANDO
 function upgradeJump(){
- if(coins>=50){
-   coins-=50;
-   jumpForce-=2;
+ if(coins >= upgradePrice){
+   coins -= upgradePrice;
+   jumpForce -= 2;
+
+   upgradePrice = Math.floor(upgradePrice * 1.8);
  } else {
    alert("Sem moedas!");
  }
@@ -235,6 +247,7 @@ function draw(){
 
  document.getElementById("meters").innerText = meters + " m";
  document.getElementById("coins").innerText = "💰 " + coins;
+ document.getElementById("upgradeBtn").innerText = "💪 Pulo + (" + upgradePrice + ")";
 }
 
 update();
