@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Jump Clicker To The Sun</title>
+<title>Jump Clicker</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
@@ -16,7 +16,6 @@ body { margin:0; overflow:hidden; background:black; font-family:Arial;}
  justify-content:space-between;
  padding:0 20px;
  color:white;
- font-size:18px;
 }
 
 .button {
@@ -72,18 +71,14 @@ button {
 
 <div id="skins">
  <h2>SKINS</h2>
- <button onclick="setSkin('white')">Branco</button>
- <button onclick="setSkin('red')">Vermelho</button>
- <button onclick="setSkin('green')">Verde</button>
- <button onclick="setSkin('dragon')">🐉 Dragon</button><br>
+ <button onclick="buySkin('white',0)">Branco (grátis)</button>
+ <button onclick="buySkin('red',100)">Vermelho (100)</button>
+ <button onclick="buySkin('green',200)">Verde (200)</button>
+ <button onclick="buySkin('dragon',500)">🐉 Dragon (500)</button><br>
  <button onclick="toggleSkins()">Fechar</button>
 </div>
 
 <canvas id="game"></canvas>
-
-<audio id="music" loop>
-<source src="https://cdn.pixabay.com/audio/2022/03/15/audio_c8c8a73467.mp3">
-</audio>
 
 <script>
 const canvas = document.getElementById("game");
@@ -106,45 +101,46 @@ let coins = 0;
 let skin = "white";
 let upgradePrice = 50;
 
-// música
-document.body.addEventListener("click", ()=>{
- document.getElementById("music").play();
-}, {once:true});
+// skins compradas
+let ownedSkins = ["white"];
 
-// LOJA (CORRIGIDA)
+// LOJA
 function toggleShop(){
  let el = document.getElementById("shop");
- if(el.style.display === "block"){
-   el.style.display = "none";
- } else {
-   el.style.display = "block";
- }
+ el.style.display = (el.style.display === "block") ? "none" : "block";
 }
 
-// SKINS (CORRIGIDA)
+// SKINS
 function toggleSkins(){
  let el = document.getElementById("skins");
- if(el.style.display === "block"){
-   el.style.display = "none";
- } else {
-   el.style.display = "block";
- }
+ el.style.display = (el.style.display === "block") ? "none" : "block";
 }
 
-// UPGRADE COM PREÇO AUMENTANDO
-function upgradeJump(){
- if(coins >= upgradePrice){
-   coins -= upgradePrice;
-   jumpForce -= 2;
+// comprar skin
+function buySkin(name, price){
+ if(ownedSkins.includes(name)){
+   skin = name; // já tem, só equipa
+   return;
+ }
 
-   upgradePrice = Math.floor(upgradePrice * 1.8);
+ if(coins >= price){
+   coins -= price;
+   ownedSkins.push(name);
+   skin = name;
  } else {
    alert("Sem moedas!");
  }
 }
 
-function setSkin(color){
- skin = color;
+// upgrade
+function upgradeJump(){
+ if(coins >= upgradePrice){
+   coins -= upgradePrice;
+   jumpForce -= 2;
+   upgradePrice = Math.floor(upgradePrice * 1.8);
+ } else {
+   alert("Sem moedas!");
+ }
 }
 
 // controle
