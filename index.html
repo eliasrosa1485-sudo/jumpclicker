@@ -2,20 +2,26 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Jump Clicker</title>
+<title>Jump Clicker To The Sun</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-body { margin:0; overflow:hidden; background:black; font-family:Arial;}
+body {
+    margin:0;
+    overflow:hidden;
+    background:black;
+    font-family:Arial;
+}
+
 #ui {
- position:fixed;
- width:100%;
- top:10px;
- display:flex;
- justify-content:space-between;
- padding:0 20px;
- color:white;
- font-size:18px;
+    position:fixed;
+    width:100%;
+    top:10px;
+    display:flex;
+    justify-content:space-between;
+    padding:0 20px;
+    color:white;
+    font-size:18px;
 }
 </style>
 </head>
@@ -23,8 +29,8 @@ body { margin:0; overflow:hidden; background:black; font-family:Arial;}
 <body>
 
 <div id="ui">
- <div id="coins">💰 0</div>
- <div id="meters">0 m</div>
+    <div id="coins">💰 0</div>
+    <div id="meters">0 m</div>
 </div>
 
 <canvas id="game"></canvas>
@@ -45,6 +51,7 @@ let cameraY = 0;
 let highestY = y;
 
 let meters = 0;
+let coins = 0;
 
 // controle
 window.addEventListener("mousedown", ()=> velocity = jumpForce);
@@ -87,12 +94,17 @@ function update(){
  if(y > canvas.height-200){
    y = canvas.height-200;
    velocity = -12;
+
+   coins += 20; // bônus ao cair
  }
 
- // medir altura REAL
+ // metros reais
  if(y < highestY){
    highestY = y;
    meters = Math.floor((canvas.height - highestY) * 2);
+
+   // ganhar moedas subindo
+   coins += 1;
  }
 
  draw();
@@ -106,7 +118,7 @@ function draw(){
  cameraY += ((y - canvas.height/2) - cameraY)*0.08;
  ctx.setTransform(1,0,0,1,0,-cameraY);
 
- // fundo gradiente
+ // fundo
  let g = ctx.createLinearGradient(0,cameraY,0,cameraY+canvas.height);
  g.addColorStop(0,"black");
  g.addColorStop(1,"#1e90ff");
@@ -121,7 +133,7 @@ function draw(){
    }
  }
 
- // sol (objetivo)
+ // sol final
  if(meters > 100000){
    ctx.fillStyle="orange";
    ctx.beginPath();
@@ -138,6 +150,7 @@ function draw(){
  ctx.setTransform(1,0,0,1,0,0);
 
  document.getElementById("meters").innerText = meters + " m";
+ document.getElementById("coins").innerText = "💰 " + coins;
 }
 
 update();
