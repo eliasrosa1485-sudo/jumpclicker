@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Jump Clicker</title>
+<title>Jump Clicker To The Sun</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
@@ -16,6 +16,7 @@ body { margin:0; overflow:hidden; background:black; font-family:Arial;}
  justify-content:space-between;
  padding:0 20px;
  color:white;
+ font-size:18px;
 }
 
 .button {
@@ -73,7 +74,8 @@ button {
  <h2>SKINS</h2>
  <button onclick="setSkin('white')">Branco</button>
  <button onclick="setSkin('red')">Vermelho</button>
- <button onclick="setSkin('green')">Verde</button><br>
+ <button onclick="setSkin('green')">Verde</button>
+ <button onclick="setSkin('dragon')">🐉 Dragon</button><br>
  <button onclick="toggleSkins()">Fechar</button>
 </div>
 
@@ -124,20 +126,36 @@ function upgradeJump(){
 // skins
 function toggleSkins(){
  let el = document.getElementById("skins");
- el.style.display = el.style.display==="none"?"block":"none";
+ el.style.display = el.style.display==="none"?"block":"block";
 }
 
 function setSkin(color){
  skin = color;
 }
 
-// controle mobile
+// controle
 window.addEventListener("touchstart", ()=> velocity = jumpForce);
 window.addEventListener("mousedown", ()=> velocity = jumpForce);
 
-// stickman
+// stickman com skin
 function drawStickman(x,y){
- ctx.strokeStyle=skin;
+
+ if(skin==="dragon"){
+   ctx.shadowBlur = 20;
+   ctx.shadowColor = "orange";
+   ctx.strokeStyle="orange";
+
+   // cabelo anime
+   ctx.fillStyle="yellow";
+   ctx.beginPath();
+   ctx.moveTo(x-15,y-45);
+   ctx.lineTo(x,y-70);
+   ctx.lineTo(x+15,y-45);
+   ctx.fill();
+ } else {
+   ctx.strokeStyle = skin;
+ }
+
  ctx.lineWidth=4;
 
  ctx.beginPath();
@@ -160,6 +178,8 @@ function drawStickman(x,y){
  ctx.moveTo(x,y+25);
  ctx.lineTo(x+15,y+45);
  ctx.stroke();
+
+ ctx.shadowBlur = 0;
 }
 
 // loop
@@ -196,8 +216,17 @@ function draw(){
  ctx.fillStyle=g;
  ctx.fillRect(0,cameraY,canvas.width,canvas.height);
 
- ctx.fillStyle="#00ccff";
+ // trampolim muda com skin
+ if(skin==="dragon"){
+   ctx.fillStyle="orange";
+   ctx.shadowBlur=15;
+   ctx.shadowColor="yellow";
+ } else {
+   ctx.fillStyle="#00ccff";
+ }
+
  ctx.fillRect(canvas.width/2-120, canvas.height-100 + cameraY,240,20);
+ ctx.shadowBlur=0;
 
  drawStickman(canvas.width/2,y);
 
