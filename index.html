@@ -6,40 +6,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-body {
-    margin: 0;
-    overflow: hidden;
-    font-family: Arial;
-    background: black;
-}
-
+body { margin:0; overflow:hidden; background:black; font-family:Arial;}
 #ui {
-    position: fixed;
-    width: 100%;
-    top: 10px;
-    display: flex;
-    justify-content: space-between;
-    padding: 0 20px;
-    color: white;
-    font-size: 18px;
-}
-
-#powerBar {
-    position: fixed;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 250px;
-    height: 15px;
-    background: #222;
-    border-radius: 10px;
-}
-
-#powerFill {
-    height: 100%;
-    width: 0%;
-    background: linear-gradient(to right, lime, yellow);
-    border-radius: 10px;
+ position:fixed;
+ width:100%;
+ top:10px;
+ display:flex;
+ justify-content:space-between;
+ padding:0 20px;
+ color:white;
+ font-size:18px;
 }
 </style>
 </head>
@@ -47,11 +23,9 @@ body {
 <body>
 
 <div id="ui">
-    <div id="coins">💰 0</div>
-    <div id="meters">0 m</div>
+ <div id="coins">💰 0</div>
+ <div id="meters">0 m</div>
 </div>
-
-<div id="powerBar"><div id="powerFill"></div></div>
 
 <canvas id="game"></canvas>
 
@@ -59,132 +33,111 @@ body {
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+canvas.width = innerWidth;
+canvas.height = innerHeight;
 
 let y = canvas.height - 200;
 let velocity = 0;
-let gravity = 0.5;
-
-let power = 0;
-let charging = false;
+let gravity = 0.4;
+let jumpForce = -15;
 
 let cameraY = 0;
+let highestY = y;
+
 let meters = 0;
 
-// controles
-window.addEventListener("mousedown", ()=> charging = true);
-window.addEventListener("mouseup", ()=>{
-    velocity = -power * 0.7;
-    charging = false;
-    power = 0;
-});
+// controle
+window.addEventListener("mousedown", ()=> velocity = jumpForce);
+window.addEventListener("touchstart", ()=> velocity = jumpForce);
 
-window.addEventListener("touchstart", ()=> charging = true);
-window.addEventListener("touchend", ()=>{
-    velocity = -power * 0.7;
-    charging = false;
-    power = 0;
-});
+// stickman
+function drawStickman(x, y){
+ ctx.strokeStyle="white";
+ ctx.lineWidth=4;
 
-// stickman estiloso
-function drawStickman(x, y) {
-    ctx.lineWidth = 5;
+ ctx.beginPath();
+ ctx.arc(x,y-30,15,0,Math.PI*2);
+ ctx.stroke();
 
-    ctx.strokeStyle = "white";
+ ctx.beginPath();
+ ctx.moveTo(x,y-15);
+ ctx.lineTo(x,y+25);
+ ctx.stroke();
 
-    // cabeça
-    ctx.beginPath();
-    ctx.arc(x, y - 30, 15, 0, Math.PI*2);
-    ctx.stroke();
+ ctx.beginPath();
+ ctx.moveTo(x-20,y);
+ ctx.lineTo(x+20,y);
+ ctx.stroke();
 
-    // corpo
-    ctx.beginPath();
-    ctx.moveTo(x, y - 15);
-    ctx.lineTo(x, y + 25);
-    ctx.stroke();
-
-    // braços animados
-    let swing = Math.sin(Date.now()*0.01)*10;
-
-    ctx.beginPath();
-    ctx.moveTo(x - 20, y);
-    ctx.lineTo(x + 20, y + swing);
-    ctx.stroke();
-
-    // pernas
-    ctx.beginPath();
-    ctx.moveTo(x, y + 25);
-    ctx.lineTo(x - 15, y + 45);
-    ctx.moveTo(x, y + 25);
-    ctx.lineTo(x + 15, y + 45);
-    ctx.stroke();
+ ctx.beginPath();
+ ctx.moveTo(x,y+25);
+ ctx.lineTo(x-15,y+45);
+ ctx.moveTo(x,y+25);
+ ctx.lineTo(x+15,y+45);
+ ctx.stroke();
 }
 
 // loop
-function update() {
+function update(){
 
-    if (charging && power < 100) power += 2;
+ velocity += gravity;
+ y += velocity;
 
-    velocity += gravity;
-    y += velocity;
+ // chão
+ if(y > canvas.height-200){
+   y = canvas.height-200;
+   velocity = -12;
+ }
 
-    if (y > canvas.height - 200) {
-        y = canvas.height - 200;
-        velocity *= -0.9;
-    }
+ // medir altura REAL
+ if(y < highestY){
+   highestY = y;
+   meters = Math.floor((canvas.height - highestY) * 2);
+ }
 
-    meters += Math.abs(velocity * 4);
-
-    draw();
-    requestAnimationFrame(update);
+ draw();
+ requestAnimationFrame(update);
 }
 
-function draw() {
-    ctx.clearRect(0,0,canvas.width,canvas.height);
+function draw(){
+ ctx.clearRect(0,0,canvas.width,canvas.height);
 
-    // câmera suave
-    cameraY += (y - canvas.height/2 - cameraY) * 0.08;
-    ctx.setTransform(1,0,0,1,0,-cameraY);
+ // câmera suave
+ cameraY += ((y - canvas.height/2) - cameraY)*0.08;
+ ctx.setTransform(1,0,0,1,0,-cameraY);
 
-    // fundo gradiente bonito
-    let gradient = ctx.createLinearGradient(0, cameraY, 0, cameraY + canvas.height);
-    gradient.addColorStop(0, "#000");
-    gradient.addColorStop(1, "#1e90ff");
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, cameraY, canvas.width, canvas.height);
+ // fundo gradiente
+ let g = ctx.createLinearGradient(0,cameraY,0,cameraY+canvas.height);
+ g.addColorStop(0,"black");
+ g.addColorStop(1,"#1e90ff");
+ ctx.fillStyle = g;
+ ctx.fillRect(0,cameraY,canvas.width,canvas.height);
 
-    // estrelas
-    ctx.fillStyle = "white";
-    for (let i = 0; i < 50; i++) {
-        ctx.fillRect(Math.random()*canvas.width, Math.random()*canvas.height + cameraY, 2, 2);
-    }
+ // estrelas
+ if(meters > 5000){
+   ctx.fillStyle="white";
+   for(let i=0;i<40;i++){
+     ctx.fillRect(Math.random()*canvas.width, Math.random()*canvas.height + cameraY,2,2);
+   }
+ }
 
-    // sol com glow
-    if (meters > 50000) {
-        let glow = ctx.createRadialGradient(
-            canvas.width/2, cameraY + 150, 10,
-            canvas.width/2, cameraY + 150, 200
-        );
-        glow.addColorStop(0, "yellow");
-        glow.addColorStop(1, "orange");
+ // sol (objetivo)
+ if(meters > 100000){
+   ctx.fillStyle="orange";
+   ctx.beginPath();
+   ctx.arc(canvas.width/2, cameraY+100, 120,0,Math.PI*2);
+   ctx.fill();
+ }
 
-        ctx.fillStyle = glow;
-        ctx.beginPath();
-        ctx.arc(canvas.width/2, cameraY + 150, 120, 0, Math.PI*2);
-        ctx.fill();
-    }
+ // chão
+ ctx.fillStyle="#00ccff";
+ ctx.fillRect(canvas.width/2-120, canvas.height-100 + cameraY,240,20);
 
-    // chão
-    ctx.fillStyle = "#00ccff";
-    ctx.fillRect(canvas.width/2 - 120, canvas.height - 100 + cameraY, 240, 20);
+ drawStickman(canvas.width/2, y);
 
-    drawStickman(canvas.width/2, y);
+ ctx.setTransform(1,0,0,1,0,0);
 
-    ctx.setTransform(1,0,0,1,0,0);
-
-    document.getElementById("powerFill").style.width = power + "%";
-    document.getElementById("meters").innerText = Math.floor(meters) + " m";
+ document.getElementById("meters").innerText = meters + " m";
 }
 
 update();
